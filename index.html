@@ -1,0 +1,859 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NTE Bond Gift Explorer</title>
+    <style>
+      :root {
+        --bg: #0f1220;
+        --panel: #171b2e;
+        --panel2: #1e2338;
+        --border: #2a3050;
+        --text: #e8e9f3;
+        --sub: #9aa0c0;
+        --accent: #7c9bff;
+        --accent2: #ffb454;
+        --good: #6fe3a3;
+        --row-hover: #232a47;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Thai", Roboto, sans-serif;
+        background: linear-gradient(180deg, #0b0d18, #12162a 40%, #0b0d18);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 24px 16px 60px;
+      }
+      .wrap {
+        max-width: 1260px;
+        margin: 0 auto;
+      }
+      header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      header h1 {
+        font-size: 26px;
+        margin: 0 0 6px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        font-weight: 800;
+      }
+      header p {
+        color: var(--sub);
+        font-size: 13.5px;
+        margin: 0;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        padding: 14px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+        align-items: center;
+      }
+      .controls .group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .controls label {
+        font-size: 11px;
+        color: var(--sub);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      select,
+      input[type="text"] {
+        background: var(--panel2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        min-width: 160px;
+      }
+      input[type="text"] {
+        min-width: 220px;
+      }
+      select:focus,
+      input:focus {
+        border-color: var(--accent);
+      }
+
+      .sort-btns {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-left: auto;
+      }
+      .sort-btns button {
+        background: var(--panel2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 9px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: 0.15s;
+        white-space: nowrap;
+      }
+      .sort-btns button:hover {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+      .sort-btns button.active {
+        background: var(--accent);
+        color: #0b0d18;
+        border-color: var(--accent);
+        font-weight: 700;
+      }
+
+      .stats {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+      }
+      .stat {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-size: 13px;
+        color: var(--sub);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .stat img {
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+        border-radius: 6px;
+        background: #0b0d18;
+        flex-shrink: 0;
+      }
+      .stat b {
+        color: var(--text);
+        font-size: 14px;
+        display: block;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--panel);
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+      }
+      thead th {
+        text-align: left;
+        padding: 12px 14px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--sub);
+        background: var(--panel2);
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+      thead th:hover {
+        color: var(--accent);
+      }
+      thead th.sorted {
+        color: var(--accent2);
+      }
+      tbody td {
+        padding: 8px 14px;
+        border-top: 1px solid var(--border);
+        font-size: 14px;
+        vertical-align: middle;
+      }
+      tbody tr:hover {
+        background: var(--row-hover);
+      }
+      .char-cell {
+        font-weight: 700;
+        color: var(--accent2);
+      }
+      .gift-cell {
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .gift-icon {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        background: #0b0d18;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        flex-shrink: 0;
+        padding: 3px;
+      }
+      .gift-name {
+        line-height: 1.25;
+      }
+      .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .badge.aff {
+        background: rgba(111, 227, 163, 0.15);
+        color: var(--good);
+      }
+      .badge.price {
+        background: rgba(255, 180, 84, 0.12);
+        color: var(--accent2);
+      }
+      .ratio {
+        font-weight: 800;
+        color: var(--accent);
+      }
+      .na {
+        color: #5a6088;
+        font-style: italic;
+        font-size: 12.5px;
+      }
+      .source-cell {
+        font-size: 12.5px;
+        color: var(--sub);
+        max-width: 220px;
+      }
+
+      footer {
+        text-align: center;
+        color: var(--sub);
+        font-size: 12px;
+        margin-top: 24px;
+      }
+      footer a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+
+      ::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 8px;
+      }
+
+      .table-scroll {
+        overflow-x: auto;
+        border-radius: 14px;
+      }
+      @media (max-width: 640px) {
+        .controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .sort-btns {
+          margin-left: 0;
+        }
+        select,
+        input[type="text"] {
+          width: 100%;
+          min-width: 0;
+        }
+        .source-cell {
+          max-width: 140px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>NTE Bond Gift Explorer</h1>
+        <p>
+          ข้อมูลของขวัญ (Bond Gift) ของแต่ละตัวละคร — เรียงตาม Affection หรือ Affection ต่อ Fons ที่จ่าย
+        </p>
+      </header>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="controls">
+        <div class="group">
+          <label>ตัวละคร (Character)</label>
+          <select id="charFilter">
+            <option value="">ทั้งหมด</option>
+          </select>
+        </div>
+        <div class="group">
+          <label>ค้นหาของขวัญ</label>
+          <input type="text" id="searchBox" placeholder="เช่น Floe Cinema Ticket..." />
+        </div>
+        <div class="group">
+          <label>เฉพาะที่ซื้อได้ (มีราคา)</label>
+          <select id="priceFilter">
+            <option value="all">ทั้งหมด</option>
+            <option value="buyable">มีราคา (ซื้อได้)</option>
+            <option value="free">ไม่มีราคา (Gacha/Event/etc.)</option>
+          </select>
+        </div>
+        <div class="sort-btns">
+          <button data-sort="affection">⬇ Affection มาก→น้อย</button>
+          <button data-sort="ratio">💎 คุ้มสุด (Affection/Fons)</button>
+          <button data-sort="price">💰 ราคาน้อย→มาก</button>
+          <button data-sort="character">🔤 ชื่อตัวละคร A→Z</button>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th data-col="character">Character</th>
+              <th data-col="gift">Gift</th>
+              <th data-col="affection" class="num">Affection</th>
+              <th data-col="price" class="num">Price (Fons)</th>
+              <th data-col="ratio" class="num">Affection / 1000 Fons</th>
+              <th data-col="source">Where to Get</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <footer>อัปเดตล่าสุด 29 ก.ค. 2026</footer>
+    </div>
+
+    <script>
+      // ---------- DATA ----------
+      // [character, gift, affection, price, source, imageUrl]
+      // Placeholder icon (inline SVG gift box) — no external image source.
+      const PLACEHOLDER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+        <rect width="64" height="64" rx="12" fill="#1e2338" stroke="#2a3050" stroke-width="2"/>
+        <text x="32" y="42" font-size="28" text-anchor="middle">🎁</text>
+      </svg>`;
+      const PLACEHOLDER_IMG =
+        "data:image/svg+xml;charset=utf-8," + encodeURIComponent(PLACEHOLDER_SVG);
+      const img = () => PLACEHOLDER_IMG;
+
+      const DATA = [
+        ["Iroi", "999 Nights", 400, 15000, "DSD POP (New Herland District)", img("item_577.png")],
+        ["Iroi", "Unknown Mystery Box", 1200, null, "Obtained from Paid Products", img("item_579.png")],
+        ["Iroi", "Puka Sweet Dreams Marshmallow", 100, 660, "Puka Candy Vending Machine / Shop", img("item_187.png")],
+        ["Iroi", "Asahi Inori - Flowing Delusion", 200, null, "Gacha Machine", img("item_215.png")],
+        ["Iroi", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+        ["Iroi", "Asahi Inori - Argentum Persona", null, null, "Gacha Machine", img("item_443.png")],
+        ["Iroi", "Solitude", null, 10000, "Oops! Chest Gift Shop (Illusion Town)", img("item_109.png")],
+        ["Iroi", "Golden Moon", 400, 15000, "Electronics Store (Illusion Town)", img("item_124.png")],
+        ["Iroi", "Asahi Inori - Galactic Fabrication", null, null, "Gacha Machine", img("item_445.png")],
+        ["Iroi", "Refulgent Agreement", 200, 4500, "Florist (Illusion Town)", img("item_180.png")],
+        ["Iroi", "Asahi Inori - Moon in the Mirror", 100, null, "Gacha Machine", img("item_444.png")],
+        ["Iroi", "Fever Dream", 200, 5000, "Oops! Chest Gift Shop (Bridge Crossings)", img("item_149.png")],
+        ["Iroi", "Bear-o-metry", 400, 10000, "Oops! Chest Gift Shop (Illusion Town)", img("item_123.png")],
+
+        [
+          "Shinku",
+          "Puka Chocoa Ellie Tour Special",
+          100,
+          1050,
+          "Puka Candy Vending Machine / Shop (Bridge Crossings)",
+          img("item_214.png"),
+        ],
+        ["Shinku", "999 Nights", 400, 15000, "DSD POP (New Herland District)", img("item_577.png")],
+        ["Shinku", "Exclusively Colored GK", 1200, null, "Obtained from Paid Products", img("item_578.png")],
+        ["Shinku", "Gigafluff - Absolute Power", 200, null, "Gacha Machine", img("item_196.png")],
+        ["Shinku", "Golden Spring", 200, 7500, "Florist (Bridge Crossings / Illusion Town)", img("item_174.png")],
+        ["Shinku", "Asahi Inori - Flowing Delusion", 200, null, "Gacha Machine", img("item_215.png")],
+        ["Shinku", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+        ["Shinku", "Asahi Inori - Moon in the Mirror", 100, null, "Gacha Machine", img("item_444.png")],
+        [
+          "Shinku",
+          "Kokoro Rider L3 - Hero's Arrival",
+          400,
+          14400,
+          "DSD POP (Bridge Crossings / Miguel District)",
+          img("item_112.png"),
+        ],
+        [
+          "Shinku",
+          "Gigafluff - The Strong",
+          400,
+          12000,
+          "DSD POP (Bridge Crossings / Miguel District)",
+          img("item_125.png"),
+        ],
+        ["Shinku", "Gigafluff - Ever Victorious", 100, null, "Gacha Machine", img("item_448.png")],
+        ["Shinku", "Golden Moon", 400, 15000, "Electronics Store (Illusion Town)", img("item_124.png")],
+
+        ["Chaos", "Delux Ship Model Kit", 1200, null, "Obtained from Paid Products", img("item_575.png")],
+        ["Chaos", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Chaos", "On Track", 400, 20000, "Electronics Store (Miguel / New Herland District)", img("item_120.png")],
+        ["Chaos", "Kokoro Rider L1 - Silent Vow", 200, null, "Gacha Machine", img("item_228.png")],
+        ["Chaos", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+        ["Chaos", "Kokoro Rider L1 - Splendor", null, null, "Gacha Machine", img("item_431.png")],
+        ["Chaos", "9331", 200, 7500, "Oops! Chest Gift Shop (Bridge Crossings)", img("item_158.png")],
+        [
+          "Chaos",
+          "Kokoro Rider L1 - Eradicator",
+          400,
+          14400,
+          "DSD POP (Illusion Town / New Herland District)",
+          img("item_105.png"),
+        ],
+        ["Chaos", "Hamburger Steak XL", 100, 420, "Family Restaurant", img("item_240.png")],
+        ["Chaos", "Sin, Vice, Crime", 200, 6000, "Bookstore (New Herland District)", img("item_171.png")],
+        [
+          "Chaos",
+          "Kokoro Rider L1 - Metal Strategist",
+          400,
+          14400,
+          "DSD POP (Bridge Crossings / Miguel District)",
+          img("item_118.png"),
+        ],
+        [
+          "Chaos",
+          "Refreshing Fruity",
+          100,
+          480,
+          "Refresh Recharge Vending Machine / Convenience Store",
+          img("item_231.png"),
+        ],
+
+        ["Lacrimosa", "Tomato Family Bucket", 1200, null, "Obtained from Paid Products", img("item_562.png")],
+        ["Lacrimosa", "Holy Worship Month", 200, 6600, "Florist (Bridge Crossings)", img("item_159.png")],
+        ["Lacrimosa", "Bunny Box", 400, 20000, "Electronics Store (Bridge Crossings)", img("item_111.png")],
+        ["Lacrimosa", "Tomato 100 Juice", 100, 480, "Tomato 100 Vending Machine", img("item_564.png")],
+        ["Lacrimosa", "Tomato 100 Jelly", 100, 480, "Tomato 100 Vending Machine", img("item_563.png")],
+        ["Lacrimosa", "Tomato 100 Milkshake", 100, 480, "Tomato 100 Vending Machine", img("item_565.png")],
+        ["Lacrimosa", "Tomato 100", 100, 300, "Tomato 100 Vending Machine", img("item_566.png")],
+        ["Lacrimosa", "Chill Out", 200, 4000, "Bookstore", img("item_93.png")],
+
+        ["Hotori", "Ebisu Royal Tower", 100, null, "Story Reward", img("item_203.png")],
+        ["Hotori", "Golden Spring", 200, 7500, "Florist (Bridge Crossings / Illusion Town)", img("item_174.png")],
+        ["Hotori", "Zhu! Vitamin!", 100, 750, "Pharmacy", img("item_489.png")],
+        ["Hotori", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+        ["Hotori", "Golden Moon", 400, 15000, "Electronics Store (Illusion Town)", img("item_124.png")],
+        ["Hotori", "Yellow Glaze Vase", 200, 3600, "Florist (Bridge Crossings / Miguel District)", img("item_134.png")],
+        ["Hotori", "Chiyo Family Brew", 100, 300, "Izakaya", img("item_259.png")],
+
+        ["Nanally", "Cool-lala Spicy Snack", 100, 300, "Vending Machine / Convenience Store", img("item_213.png")],
+        [
+          "Nanally",
+          "Gubichi Original Flavor Chips",
+          100,
+          360,
+          "Gubicrisp Vending Machine / Convenience Store",
+          img("item_226.png"),
+        ],
+        ["Nanally", "Nekomaru Oni Ramen", 100, 600, "Ramen Shop", img("item_227.png")],
+        ["Nanally", "Blazing Crimson", 200, 5400, "Florist (Illusion Town)", img("item_179.png")],
+        ["Nanally", "We Are One", 200, 6000, "Bookstore (Bridge Crossings / Miguel District)", img("item_167.png")],
+        ["Nanally", "Sin, Vice, Crime", 200, 6000, "Bookstore (New Herland District)", img("item_171.png")],
+        ["Nanally", "Kokoro Rider L1 - Silent Vow", 200, null, "Gacha Machine", img("item_228.png")],
+        [
+          "Nanally",
+          "Kokoro Rider L1 - Metal Strategist",
+          400,
+          14400,
+          "DSD POP (Bridge Crossings / Miguel District)",
+          img("item_118.png"),
+        ],
+        [
+          "Nanally",
+          "Kokoro Rider L1 - Eradicator",
+          400,
+          14400,
+          "DSD POP (Illusion Town / New Herland District)",
+          img("item_105.png"),
+        ],
+        ["Nanally", "Kokoro Rider L1 - Ultimate Skill", 400, null, "Gacha Machine", img("item_229.png")],
+        ["Nanally", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Nanally", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        ["Chiz", "Puka Sweet Dreams Marshmallow", 100, 660, "Puka Candy Vending Machine / Shop", img("item_187.png")],
+        ["Chiz", "Rose Lychee Cake", 100, 660, "Bakery", img("item_207.png")],
+        ["Chiz", "Nyanko Punch Taro Pudding Milktea", 100, 450, "Milk Tea Shop", img("item_208.png")],
+        ["Chiz", "Holy Worship Month", 200, 6600, "Florist (Bridge Crossings)", img("item_159.png")],
+        ["Chiz", "Sweet Pink", 200, 5400, "Florist (Illusion Town)", img("item_140.png")],
+        ["Chiz", "Fantasia", 200, 3000, "Florist", img("item_178.png")],
+        ["Chiz", "Bunny Box", 400, 20000, "Electronics Store (Bridge Crossings)", img("item_111.png")],
+        ["Chiz", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Chiz", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        ["Hathor", "0-K Cold Brew", 100, 600, "Vending Machine / Convenience Store", img("item_205.png")],
+        ["Hathor", "Colorful Light Salad", 100, 450, "Family Restaurant", img("item_206.png")],
+        ["Hathor", "Cooly Cool Refresher", 100, 600, "Pharmacy", img("item_190.png")],
+        ["Hathor", "Nightingale's Sonata", 200, 6000, "Florist (Bridge Crossings)", img("item_166.png")],
+        ["Hathor", "Fever Dream", 200, 5000, "Oops! Chest Gift Shop (Bridge Crossings)", img("item_149.png")],
+        ["Hathor", "On Track", 400, 20000, "Electronics Store (Miguel / New Herland District)", img("item_120.png")],
+        ["Hathor", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Hathor", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        [
+          "Jiuyuan",
+          "Magi-Puff Whole Wheat Bread",
+          100,
+          360,
+          "Vending Machine / Convenience Store",
+          img("item_202.png"),
+        ],
+        ["Jiuyuan", "Cold Brew", 100, 450, "Café", img("item_186.png")],
+        ["Jiuyuan", "Ebisu Royal Tower", 100, null, "Story Reward", img("item_203.png")],
+        ["Jiuyuan", "Nightingale's Sonata", 200, 6000, "Florist (Bridge Crossings)", img("item_166.png")],
+        ["Jiuyuan", "Moon Vase", 200, 3000, "Florist (Bridge Crossings / Miguel District)", img("item_137.png")],
+        ["Jiuyuan", "On Track", 400, 20000, "Electronics Store (Miguel / New Herland District)", img("item_120.png")],
+        ["Jiuyuan", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Jiuyuan", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        ["Fadia", "Refreshing Mystery", 100, 840, "Refresh Recharge Vending Machine", img("item_199.png")],
+        ["Fadia", "Deep in the Heart", 100, 1800, "Bar (Miguel / New Herland District)", img("item_200.png")],
+        ["Fadia", "Classic Trio", 100, 660, "Restaurant", img("item_201.png")],
+        ["Fadia", "Golden Spring", 200, 7500, "Florist (Bridge Crossings / Illusion Town)", img("item_174.png")],
+        ["Fadia", "Balance", 200, 7500, "Oops! Chest Gift Shop (Illusion Town)", img("item_161.png")],
+        ["Fadia", "Glimmering Ice", 400, 5400, "Florist (Bridge Crossings / Miguel District)", img("item_121.png")],
+        ["Fadia", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Fadia", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        [
+          "Sakiri",
+          "Crave Bites! Milk Flavor",
+          100,
+          360,
+          "Gubicrisp Vending Machine / Convenience Store",
+          img("item_197.png"),
+        ],
+        ["Sakiri", "Nyanko Splash Black Sugar Boba Dirty Chai", 100, 450, "Milk Tea Shop", img("item_198.png")],
+        ["Sakiri", "Kids Energy Meal", 100, 450, "Family Restaurant", img("item_195.png")],
+        ["Sakiri", "Blue Fable", 200, 6600, "Florist (Bridge Crossings)", img("item_164.png")],
+        ["Sakiri", "Fever Dream", 200, 5000, "Oops! Chest Gift Shop (Bridge Crossings)", img("item_149.png")],
+        ["Sakiri", "Bunny Box", 400, 20000, "Electronics Store (Bridge Crossings)", img("item_111.png")],
+        ["Sakiri", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Sakiri", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        ["Baicang", "Puka Chocoa Spicy Challenge", 100, 600, "Puka Candy Vending Machine / Shop", img("item_193.png")],
+        ["Baicang", "Nekomaru Vegan Ramen", 100, 600, "Ramen Shop", img("item_194.png")],
+        ["Baicang", "Kids Energy Meal", 100, 450, "Family Restaurant", img("item_195.png")],
+        ["Baicang", "Refulgent Agreement", 200, 4500, "Florist (Illusion Town)", img("item_180.png")],
+        ["Baicang", "9331", 200, 7500, "Oops! Chest Gift Shop (Bridge Crossings)", img("item_158.png")],
+        ["Baicang", "Gigafluff - Absolute Power", 200, null, "Gacha Machine", img("item_196.png")],
+        [
+          "Baicang",
+          "Gigafluff - Musclology",
+          400,
+          12000,
+          "DSD POP (Bridge Crossings / Miguel District)",
+          img("item_108.png"),
+        ],
+        [
+          "Baicang",
+          "Gigafluff - The Strong",
+          400,
+          12000,
+          "DSD POP (Bridge Crossings / Miguel District)",
+          img("item_125.png"),
+        ],
+        ["Baicang", "Gigafluff - Reign of Darkness", 400, null, "Gacha Machine", img("item_192.png")],
+        ["Baicang", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Baicang", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        [
+          "Daffodill",
+          "Puka Sweet Dreams Marshmallow",
+          100,
+          660,
+          "Puka Candy Vending Machine / Shop",
+          img("item_187.png"),
+        ],
+        ["Daffodill", "Nyanko Cozy Uji Matcha", 100, 450, "Milk Tea Shop", img("item_191.png")],
+        ["Daffodill", "Cooly Cool Refresher", 100, 600, "Pharmacy", img("item_190.png")],
+        ["Daffodill", "Eternal Purity", 200, 5400, "Florist (Illusion Town)", img("item_141.png")],
+        ["Daffodill", "Promise", 400, 10000, "Oops! Chest Gift Shop (Bridge Crossings)", img("item_103.png")],
+        ["Daffodill", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Daffodill", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        ["Aurelia", "Ebisu Royal Tower", 100, null, "Story Reward", img("item_203.png")],
+        ["Aurelia", "Blue Fable", 200, 6600, "Florist (Bridge Crossings)", img("item_164.png")],
+        ["Aurelia", "Ambient Night Light", 400, 18000, "Electronics Store (Miguel District)", img("item_107.png")],
+        ["Aurelia", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+        [
+          "Aurelia",
+          "Refreshing Fruity",
+          100,
+          480,
+          "Refresh Recharge Vending Machine / Convenience Store",
+          img("item_231.png"),
+        ],
+        ["Aurelia", "Promise", 400, 10000, "Oops! Chest Gift Shop (Bridge Crossings)", img("item_103.png")],
+        ["Aurelia", "Fantasia", 200, 3000, "Florist", img("item_178.png")],
+        ["Aurelia", "Mousou Puzzle", 200, 7200, "Bookstore (Bridge Crossings / Miguel District)", img("item_173.png")],
+        ["Aurelia", "Bigmouth Custard Baozi", 100, 300, "Bigmouth Baozi", img("item_211.png")],
+
+        ["Mint", "Gubicrisp", 100, 300, "Gubicrisp Vending Machine / Convenience Store", img("item_223.png")],
+        ["Mint", "Super Tonkotsu Ramen", 100, 600, "Izakaya", img("item_224.png")],
+        ["Mint", "Nyanko Punch Taro Pudding Milktea", 100, 450, "Milk Tea Shop", img("item_208.png")],
+        ["Mint", "Waltz", 200, 3000, "Florist", img("item_225.png")],
+        [
+          "Mint",
+          "Secrets of the Bag…",
+          200,
+          4800,
+          "Bookstore (Bridge Crossings / Illusion Town / Miguel District)",
+          img("item_92.png"),
+        ],
+        [
+          "Mint",
+          "Asahi Inori - Moonlight",
+          400,
+          18000,
+          "DSD POP (Illusion Town / New Herland District)",
+          img("item_102.png"),
+        ],
+        [
+          "Mint",
+          "Asahi Inori - Crimson",
+          400,
+          18000,
+          "DSD POP (Illusion Town / New Herland District)",
+          img("item_106.png"),
+        ],
+        ["Mint", "Asahi Inori - Moonsilver", 400, null, "Gacha Machine", img("item_216.png")],
+        ["Mint", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Mint", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        ["Adler", "Wanderer's Banjo", 100, 1800, "Bar (Miguel / New Herland District)", img("item_220.png")],
+        ["Adler", "Purification Guard Lozenges", 100, 420, "Pharmacy", img("item_221.png")],
+        ["Adler", "Great Defender!", 100, 1800, "Pharmacy", img("item_222.png")],
+        ["Adler", "Holy Worship Month", 200, 6600, "Florist (Bridge Crossings)", img("item_159.png")],
+        ["Adler", "Golden Dawn", 200, 3600, "Florist (Bridge Crossings / Miguel District)", img("item_145.png")],
+        ["Adler", "Promise", 400, 10000, "Oops! Chest Gift Shop (Bridge Crossings)", img("item_103.png")],
+        ["Adler", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Adler", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        ["Skia", "Bob's Tea Garden", 100, 300, "Bob's Vending Machine / Convenience Store", img("item_217.png")],
+        ["Skia", "Clicky Lavaburger", 100, 450, "Fast Food Restaurant", img("item_218.png")],
+        ["Skia", "Song of the Gladiator", 100, 1800, "Bar (Miguel / New Herland District)", img("item_219.png")],
+        ["Skia", "Shout!", 200, 4800, "Bookstore", img("item_94.png")],
+        ["Skia", "Chill Out", 200, 4000, "Bookstore", img("item_93.png")],
+        [
+          "Skia",
+          "Secrets of the Bag…",
+          200,
+          4800,
+          "Bookstore (Bridge Crossings / Illusion Town / Miguel District)",
+          img("item_92.png"),
+        ],
+        ["Skia", "White Jade Lamp", 400, 20000, "Electronics Store (Miguel District)", img("item_91.png")],
+        ["Skia", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Skia", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        ["Haniel", "Sakai Melon Bread", 100, 360, "Vending Machine / Convenience Store", img("item_212.png")],
+        ["Haniel", "Cool-lala Spicy Snack", 100, 300, "Vending Machine / Convenience Store", img("item_213.png")],
+        [
+          "Haniel",
+          "Puka Chocoa Ellie Tour Special",
+          100,
+          1050,
+          "Puka Candy Vending Machine / Shop",
+          img("item_214.png"),
+        ],
+        ["Haniel", "Fantasia", 200, 3000, "Florist", img("item_178.png")],
+        ["Haniel", "We Are One", 200, 6000, "Bookstore (Bridge Crossings / Miguel District)", img("item_167.png")],
+        ["Haniel", "Sin, Vice, Crime", 200, 6000, "Bookstore (New Herland District)", img("item_171.png")],
+        ["Haniel", "Asahi Inori - Flowing Delusion", 200, null, "Gacha Machine", img("item_215.png")],
+        [
+          "Haniel",
+          "Asahi Inori - Moonlight",
+          400,
+          18000,
+          "DSD POP (Illusion Town / New Herland District)",
+          img("item_102.png"),
+        ],
+        [
+          "Haniel",
+          "Asahi Inori - Crimson",
+          400,
+          18000,
+          "DSD POP (Illusion Town / New Herland District)",
+          img("item_106.png"),
+        ],
+        ["Haniel", "Asahi Inori - Moonsilver", 400, null, "Gacha Machine", img("item_216.png")],
+        ["Haniel", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Haniel", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+
+        ["Edgar", "Snowy Tofu Pudding", 100, 450, "Tofu Shop", img("item_209.png")],
+        ["Edgar", "Clicky Fries", 100, 300, "Fast Food Restaurant", img("item_210.png")],
+        ["Edgar", "Bigmouth Custard Baozi", 100, 300, "Bigmouth Baozi", img("item_211.png")],
+        ["Edgar", "Blue Fable", 200, 6600, "Florist (Bridge Crossings)", img("item_164.png")],
+        ["Edgar", "Boss's Approval", 200, 4000, "Bookstore", img("item_157.png")],
+        ["Edgar", "Day Off", 200, 4800, "Bookstore", img("item_160.png")],
+        ["Edgar", "HAHA", 200, 4000, "Bookstore", img("item_163.png")],
+        ["Edgar", "Bear-o-metry", 400, 10000, "Oops! Chest Gift Shop (Illusion Town)", img("item_123.png")],
+        ["Edgar", "A Handwritten Letter", 2000, null, "Warp Exchange / Circle Bounty", img("item_10.png")],
+        ["Edgar", "Unrecorded Sound", 400, 15000, "Record Shop", img("item_230.png")],
+        ["Edgar", "Floe Cinema Ticket", 400, null, "Event Reward / Maintenance Compensation", img("item_204.png")],
+      ];
+
+      const rows = DATA.map(([character, gift, affection, price, source, image]) => ({
+        character,
+        gift,
+        affection,
+        price,
+        source,
+        image,
+        ratio: affection != null && price != null && price > 0 ? (affection / price) * 1000 : null,
+      }));
+
+      // ---------- STATE ----------
+      let state = { sortKey: "affection", sortDir: "desc", char: "", search: "", priceFilter: "all" };
+
+      // ---------- INIT UI ----------
+      const charFilter = document.getElementById("charFilter");
+      const characters = [...new Set(rows.map((r) => r.character))].sort();
+      characters.forEach((c) => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        charFilter.appendChild(opt);
+      });
+
+      document.getElementById("searchBox").addEventListener("input", (e) => {
+        state.search = e.target.value.toLowerCase();
+        render();
+      });
+      charFilter.addEventListener("change", (e) => {
+        state.char = e.target.value;
+        render();
+      });
+      document.getElementById("priceFilter").addEventListener("change", (e) => {
+        state.priceFilter = e.target.value;
+        render();
+      });
+
+      document.querySelectorAll(".sort-btns button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.sort;
+          if (state.sortKey === key) {
+            state.sortDir = state.sortDir === "desc" ? "asc" : "desc";
+          } else {
+            state.sortKey = key;
+            state.sortDir = "desc";
+          }
+          render();
+        });
+      });
+
+      document.querySelectorAll("thead th[data-col]").forEach((th) => {
+        th.addEventListener("click", () => {
+          const key = th.dataset.col;
+          if (!["character", "affection", "price", "ratio"].includes(key)) return;
+          if (state.sortKey === key) {
+            state.sortDir = state.sortDir === "desc" ? "asc" : "desc";
+          } else {
+            state.sortKey = key;
+            state.sortDir = key === "character" ? "asc" : "desc";
+          }
+          render();
+        });
+      });
+
+      function applyFilters(list) {
+        return list.filter((r) => {
+          if (state.char && r.character !== state.char) return false;
+          if (
+            state.search &&
+            !r.gift.toLowerCase().includes(state.search) &&
+            !r.character.toLowerCase().includes(state.search)
+          )
+            return false;
+          if (state.priceFilter === "buyable" && r.price == null) return false;
+          if (state.priceFilter === "free" && r.price != null) return false;
+          return true;
+        });
+      }
+
+      function applySort(list) {
+        const key = state.sortKey;
+        const dir = state.sortDir === "asc" ? 1 : -1;
+        return [...list].sort((a, b) => {
+          let av = a[key],
+            bv = b[key];
+          if (key === "character" || key === "gift") {
+            return dir * String(av).localeCompare(String(bv));
+          }
+          const aNull = av == null,
+            bNull = bv == null;
+          if (aNull && bNull) return 0;
+          if (aNull) return 1;
+          if (bNull) return -1;
+          return dir * (av - bv);
+        });
+      }
+
+      function render() {
+        const filtered = applyFilters(rows);
+        const sorted = applySort(filtered);
+
+        document.querySelectorAll(".sort-btns button").forEach((b) => {
+          b.classList.toggle("active", b.dataset.sort === state.sortKey);
+        });
+        document.querySelectorAll("thead th[data-col]").forEach((th) => {
+          th.classList.toggle("sorted", th.dataset.col === state.sortKey);
+        });
+
+        const tbody = document.getElementById("tbody");
+        tbody.innerHTML = sorted
+          .map(
+            (r) => `
+              <tr>
+                <td class="char-cell">${r.character}</td>
+                <td>
+                  <div class="gift-cell">
+                    <img class="gift-icon" src="${r.image}" alt="${r.gift}" loading="lazy" onerror="this.style.visibility='hidden'">
+                    <span class="gift-name">${r.gift}</span>
+                  </div>
+                </td>
+                <td class="num">${r.affection != null ? `<span class="badge aff">${r.affection}</span>` : `<span class="na">ไม่มีข้อมูล</span>`}</td>
+                <td class="num">${r.price != null ? `<span class="badge price">${r.price.toLocaleString()}</span>` : `<span class="na">หาไม่ได้ด้วย Fons</span>`}</td>
+                <td class="num">${r.ratio != null ? `<span class="ratio">${r.ratio.toFixed(1)}</span>` : `<span class="na">—</span>`}</td>
+                <td class="source-cell">${r.source}</td>
+              </tr>
+            `,
+          )
+          .join("");
+
+        const totalGifts = filtered.length;
+        const buyable = filtered.filter((r) => r.price != null);
+        const bestRatio = filtered.filter((r) => r.ratio != null).sort((a, b) => b.ratio - a.ratio)[0];
+        const highestAff = filtered.filter((r) => r.affection != null).sort((a, b) => b.affection - a.affection)[0];
+
+        document.getElementById("stats").innerHTML = `
+          <div class="stat"><div><b>${totalGifts}</b>รายการของขวัญที่แสดง</div></div>
+          <div class="stat"><div><b>${buyable.length}</b>รายการที่ซื้อด้วย Fons ได้</div></div>
+          ${bestRatio ? `<div class="stat"><img src="${bestRatio.image}" onerror="this.style.display='none'"><div><b>${bestRatio.gift}</b>คุ้มสุด: ${bestRatio.ratio.toFixed(1)} Aff/1000 Fons (${bestRatio.character})</div></div>` : ""}
+          ${highestAff ? `<div class="stat"><img src="${highestAff.image}" onerror="this.style.display='none'"><div><b>${highestAff.gift}</b>Affection สูงสุด: ${highestAff.affection} (${highestAff.character})</div></div>` : ""}
+        `;
+      }
+
+      render();
+    </script>
+  </body>
+</html>
