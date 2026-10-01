@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://nte-gifts.chaiyokung.com/sitemap.xml
